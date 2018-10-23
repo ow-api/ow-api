@@ -1,5 +1,5 @@
 fpm -s dir -t deb -p build/$ARCH/owapi_$VERSION.deb \
-    -n ow-api -v $VERSION \
+    -n owapi -v $VERSION \
     --deb-priority optional --force \
     --deb-compression bzip2 \
     --description "Overwatch API Server" \
