@@ -83,9 +83,12 @@ func main() {
 	router.GET("/v1/stats/pc/:region/:tag/complete", stats)
 
 	// Console
-	router.GET("/v1/stats/:platform/:tag/heroes/:heroes", heroes)
-	router.GET("/v1/stats/:platform/:tag/profile", profile)
-	router.GET("/v1/stats/:platform/:tag/complete", stats)
+	router.GET("/v1/stats/psn/:tag/heroes/:heroes", heroes)
+	router.GET("/v1/stats/psn/:tag/profile", profile)
+	router.GET("/v1/stats/psn/:tag/complete", stats)
+	router.GET("/v1/stats/xbl/:tag/heroes/:heroes", heroes)
+	router.GET("/v1/stats/xbl/:tag/profile", profile)
+	router.GET("/v1/stats/xbl/:tag/complete", stats)
 
 	// Version
 	router.GET("/v1/version", VersionHandler)
