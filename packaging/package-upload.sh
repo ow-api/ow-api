@@ -1,0 +1,1 @@
+curl -X POST "$UPLOAD_URL" -F "file_i386=@build/i386/owapi_$VERSION.deb" -F "file_amd64=@build/amd64/owapi_$VERSION.deb" -F "file_armv7=@build/armv7/owapi_$VERSION.deb"

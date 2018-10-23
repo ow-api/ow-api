@@ -1,0 +1,37 @@
+hash: bb44c8a1544b360d30dd09101d029e73c355e26b621a885bb6029e35b0eb834b
+updated: 2018-10-23T08:14:21.9542093-04:00
+imports:
+- name: github.com/andybalholm/cascadia
+  version: 901648c87902174f774fac311d7f176f8647bdaa
+- name: github.com/evanphx/json-patch
+  version: 72bf35d0ff611848c1dc9df0f976c81192392fa5
+- name: github.com/go-redis/redis
+  version: f3bba01df2026fc865f7782948845db9cf44cf23
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
+  - internal/singleflight
+  - internal/util
+- name: github.com/jinzhu/inflection
+  version: 04140366298a54a039076d798123ffa108fff46c
+- name: github.com/julienschmidt/httprouter
+  version: 348b672cd90d8190f8240323e372ecd1e66b59dc
+- name: github.com/PuerkitoBio/goquery
+  version: ea1bc64a63088ac2bbf1a2edcae38413794a7710
+- name: github.com/rs/cors
+  version: 9a47f48565a795472d43519dd49aac781f3034fb
+- name: github.com/starboy/httpclient
+  version: d6d6e42b608037f8e4c37fd3a55d6819c44a99f1
+- name: github.com/starboy/ovrstat
+  version: dd5d178c511fc652deeaddbfbe2e7ddfb32ae188
+  subpackages:
+  - ovrstat
+- name: golang.org/x/net
+  version: 92b859f39abd2d91a854c9f9c4621b2f5054a92d
+  subpackages:
+  - html
+  - html/atom
+testImports: []

@@ -1,0 +1,37 @@
+#! /bin/sh
+# preinst script for astra
+set -e
+addowapiuser() {
+    if ! getent passwd owapi > /dev/null; then
+       adduser --quiet --system --group \
+        --disabled-login \
+    	--home /var/lib/owapi \
+    	--no-create-home \
+    	--shell /bin/false \
+    	owapi
+    fi
+}
+
+createdirectories() {
+	mkdir -p /var/lib/owapi || true
+	chown -R owapi:owapi /var/lib/owapi
+}
+
+case "$1" in
+    install)
+        addowapiuser
+        createdirectories
+        ;;
+    upgrade)
+        addowapiuser
+        createdirectories
+        ;;
+    abort-upgrade)
+        ;;
+    *)
+        echo "preinst called with unknown argument \`$1'" >&2
+        exit 0
+        ;;
+esac
+
+exit 0

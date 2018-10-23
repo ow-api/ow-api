@@ -1,0 +1,11 @@
+[Unit]
+Description=Overwatch API Server
+
+[Service]
+User=owapi
+Group=owapi
+Restart=on-failure
+ExecStart=/usr/bin/owapi
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" != "configure" ]; then
+    exit 0
+fi
+
+# Touch and set permisions on default log files on installation
+
+if [ -x "/etc/init.d/owapi" ]; then
+    update-rc.d owapi defaults >/dev/null
+    if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
+        invoke-rc.d owapi start || true
+    else
+        /etc/init.d/owapi start || true
+    fi
+fi
