@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"github.com/evanphx/json-patch"
+	"gitea.meow.tf/ow-api/ow-api/json-patch"
 	"github.com/go-redis/redis"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	Version = "2.0.1"
+	Version = "2.0.2"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
