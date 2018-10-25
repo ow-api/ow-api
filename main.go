@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	Version = "2.0.4"
+	Version = "2.0.5"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -132,7 +132,7 @@ func loadHeroNames() {
 
 func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		ps = append(ps, httprouter.Param{Key: "platform"})
+		ps = append(ps, httprouter.Param{Key: "platform", Value: platform})
 
 		handler(w, r, ps)
 	}
