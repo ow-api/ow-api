@@ -16,21 +16,21 @@ import (
 )
 
 const (
-	Version = "2.0.2"
+	Version = "2.0.3"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
 )
 
 type patchOperation struct {
-	Op string `json:"op"`
-	Path string `json:"path"`
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
 	Value interface{} `json:"value,omitempty"`
 }
 
 type gamesStats struct {
 	Played int64 `json:"played"`
-	Won int64 `json:"won"`
+	Won    int64 `json:"won"`
 }
 
 type awardsStats struct {
@@ -72,7 +72,7 @@ func main() {
 	profilePatch, err = patchFromOperations(ops)
 
 	if err != nil {
-		return
+		log.Fatalln("Unable to create base patch:", err)
 	}
 
 	router := httprouter.New()
@@ -83,12 +83,12 @@ func main() {
 	router.GET("/v1/stats/pc/:region/:tag/complete", stats)
 
 	// Console
-	router.GET("/v1/stats/psn/:tag/heroes/:heroes", heroes)
-	router.GET("/v1/stats/psn/:tag/profile", profile)
-	router.GET("/v1/stats/psn/:tag/complete", stats)
-	router.GET("/v1/stats/xbl/:tag/heroes/:heroes", heroes)
-	router.GET("/v1/stats/xbl/:tag/profile", profile)
-	router.GET("/v1/stats/xbl/:tag/complete", stats)
+	router.GET("/v1/stats/psn/:tag/heroes/:heroes", injectPlatform("psn", heroes))
+	router.GET("/v1/stats/psn/:tag/profile", injectPlatform("psn", profile))
+	router.GET("/v1/stats/psn/:tag/complete", injectPlatform("psn", stats))
+	router.GET("/v1/stats/xbl/:tag/heroes/:heroes", injectPlatform("xbl", heroes))
+	router.GET("/v1/stats/xbl/:tag/profile", injectPlatform("xbl", profile))
+	router.GET("/v1/stats/xbl/:tag/complete", injectPlatform("xbl", stats))
 
 	// Version
 	router.GET("/v1/version", VersionHandler)
@@ -127,6 +127,12 @@ func loadHeroNames() {
 
 	for k := range m {
 		heroNames = append(heroNames, k)
+	}
+}
+
+func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		ps = append(ps, httprouter.Param{Key: "platform"})
 	}
 }
 
@@ -181,12 +187,12 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 		awards.Gold = valueOrDefault(hs.MatchAwards, "medalsGold", 0)
 
 		extra = append(extra, patchOperation{
-			Op: OpAdd,
-			Path: "/quickPlayStats/games",
+			Op:    OpAdd,
+			Path:  "/quickPlayStats/games",
 			Value: games,
 		}, patchOperation{
-			Op: OpAdd,
-			Path: "/quickPlayStats/awards",
+			Op:    OpAdd,
+			Path:  "/quickPlayStats/awards",
 			Value: awards,
 		})
 	}
@@ -206,12 +212,12 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 		awards.Gold = valueOrDefault(hs.MatchAwards, "medalsGold", 0)
 
 		extra = append(extra, patchOperation{
-			Op: OpAdd,
-			Path: "/competitiveStats/games",
+			Op:    OpAdd,
+			Path:  "/competitiveStats/games",
 			Value: games,
 		}, patchOperation{
-			Op: OpAdd,
-			Path: "/competitiveStats/awards",
+			Op:    OpAdd,
+			Path:  "/competitiveStats/awards",
 			Value: awards,
 		})
 	}
@@ -237,7 +243,7 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 	}
 
 	// Cache response
-	client.Set(cacheKey, b, 10 * time.Minute)
+	client.Set(cacheKey, b, 10*time.Minute)
 
 	if patch != nil {
 		// Apply filter patch
@@ -279,7 +285,7 @@ func profile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	client.Set(cacheKey, data, 10 * time.Minute)
+	client.Set(cacheKey, data, 10*time.Minute)
 
 	w.Header().Set("Content-Type", "application/json")
 
