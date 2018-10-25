@@ -133,6 +133,8 @@ func loadHeroNames() {
 func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ps = append(ps, httprouter.Param{Key: "platform"})
+
+		handler(w, r, ps)
 	}
 }
 
