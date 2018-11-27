@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/starboy/ovrstat/ovrstat"
+	"github.com/tystuyfzand/ovrstat/ovrstat"
 	"testing"
 )
 
