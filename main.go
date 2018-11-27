@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
-	"github.com/starboy/ovrstat/ovrstat"
+	"github.com/tystuyfzand/ovrstat/ovrstat"
 	"log"
 	"net/http"
 	"strings"
@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	Version = "2.0.5"
+	Version = "2.0.6"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
