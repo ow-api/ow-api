@@ -1,38 +1,40 @@
-workspace:
-  base: /go
-  path: src/gitea.meow.tf/ow-api/ow-api
-
 pipeline:
-  dependencies:
-    image: golang:latest
-    commands:
-     - mkdir /go/bin
-     - curl https://glide.sh/get | sh
-     - glide install
   build-i386:
     image: golang:latest
     group: build
+    volumes:
+      - name: build
+        path: /build
     commands:
-     - mkdir -p build/i386
-     - GOOS=linux GOARCH=386 go build -o build/i386/owapi
+     - mkdir -p /build/i386
+     - GOOS=linux GOARCH=386 go build -o /build/i386/owapi
   build-amd64:
     image: golang:latest
     group: build
+    volumes:
+      - name: build
+        path: /build
     commands:
-     - mkdir -p build/amd64
-     - go build -o build/amd64/owapi
+     - mkdir -p /build/amd64
+     - go build -o /build/amd64/owapi
   build-armv7:
     image: golang:latest
     group: build
+    volumes:
+      - name: build
+        path: /build
     commands:
-      - mkdir -p build/armv7
-      - GOOS=linux GOARCH=arm GOARM=7 go build -o build/armv7/owapi
+      - mkdir -p /build/armv7
+      - GOOS=linux GOARCH=arm GOARM=7 go build -o /build/armv7/owapi
   build-arm64:
     image: golang:latest
     group: build
+    volumes:
+      - name: build
+        path: /build
     commands:
-      - mkdir -p build/arm64
-      - GOOS=linux GOARCH=arm64 go build -o build/arm64/owapi
+      - mkdir -p /build/arm64
+      - GOOS=linux GOARCH=arm64 go build -o /build/arm64/owapi
   package:
     image: tystuyfzand/fpm
     commands:
@@ -43,4 +45,10 @@ pipeline:
      - ARCH=armv7 packaging/build-package.sh
      - ARCH=arm64 packaging/build-package.sh
      - packaging/package-upload.sh
-    secrets: [ upload_url ]
+    environment:
+      UPLOAD_URL:
+        from_secret: upload_url
+
+volumes:
+  - name: build
+    temp: {}

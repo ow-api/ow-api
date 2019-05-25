@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"gitea.meow.tf/ow-api/ow-api/json-patch"
+	"git.meow.tf/ow-api/ow-api/json-patch"
 	"github.com/go-redis/redis"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
@@ -107,7 +107,7 @@ func main() {
 }
 
 func loadHeroNames() {
-	stats, err := ovrstat.PCStats("na", "cats-11481")
+	stats, err := ovrstat.PCStats("us", "cats-11481")
 
 	if err != nil {
 		return
