@@ -2,7 +2,7 @@ kind: pipeline
 name: default
 
 steps:
-  build-i386:
+  - name: build-i386
     image: golang:latest
     group: build
     volumes:
@@ -11,7 +11,7 @@ steps:
     commands:
      - mkdir -p /build/i386
      - GOOS=linux GOARCH=386 go build -o /build/i386/owapi
-  build-amd64:
+  - name: build-amd64
     image: golang:latest
     group: build
     volumes:
@@ -20,7 +20,7 @@ steps:
     commands:
      - mkdir -p /build/amd64
      - go build -o /build/amd64/owapi
-  build-armv7:
+  - name: build-armv7
     image: golang:latest
     group: build
     volumes:
@@ -29,7 +29,7 @@ steps:
     commands:
       - mkdir -p /build/armv7
       - GOOS=linux GOARCH=arm GOARM=7 go build -o /build/armv7/owapi
-  build-arm64:
+  - name: build-arm64
     image: golang:latest
     group: build
     volumes:
@@ -38,7 +38,7 @@ steps:
     commands:
       - mkdir -p /build/arm64
       - GOOS=linux GOARCH=arm64 go build -o /build/arm64/owapi
-  package:
+  - name: package
     image: tystuyfzand/fpm
     commands:
      - export VERSION=`grep "Version" main.go | head -n 1 | awk '{print $3}' | sed -e 's/^"//' -e 's/"$//' | tr -d '\n'`
