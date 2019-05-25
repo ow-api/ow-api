@@ -1,3 +1,6 @@
+kind: pipeline
+name: default
+
 pipeline:
   build-i386:
     image: golang:latest
