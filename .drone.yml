@@ -1,7 +1,7 @@
 kind: pipeline
 name: default
 
-pipeline:
+steps:
   build-i386:
     image: golang:latest
     group: build
