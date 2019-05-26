@@ -10,14 +10,15 @@ steps:
         path: /build
     commands:
      - mkdir -p /build/i386 /build/amd64 /build/armv7 /build/arm64
-     - GOOS=linux GOARCH=386 go build -o /build/i386/owapi
-     - go build -o /build/amd64/owapi
-     - GOOS=linux GOARCH=arm GOARM=7 go build -o /build/armv7/owapi
-     - GOOS=linux GOARCH=arm64 go build -o /build/arm64/owapi
+     - GOOS=linux GOARCH=386 go build -o /build/i386/owapi_i386
+     - go build -o /build/amd64/owapi_amd64
+     - GOOS=linux GOARCH=arm GOARM=7 go build -o /build/armv7/owapi_armv7
+     - GOOS=linux GOARCH=arm64 go build -o /build/arm64/owapi_arm64
   - name: package
     image: tystuyfzand/fpm
     commands:
      - export VERSION=`grep "Version" main.go | head -n 1 | awk '{print $3}' | sed -e 's/^"//' -e 's/"$//' | tr -d '\n'`
+     - echo "v$VERSION" > /build/version.txt
      - chmod +x packaging/build-package.sh packaging/package-upload.sh
      - ARCH=i386 packaging/build-package.sh
      - ARCH=amd64 packaging/build-package.sh
@@ -30,6 +31,18 @@ steps:
     environment:
       UPLOAD_URL:
         from_secret: upload_url
+  - name: release
+    image: tystuyfzand/drone-gitea-release
+    volumes:
+      - name: build
+        path: /build
+    settings:
+      tag_file: /build/version.txt
+      title_file: /build/version.txt
+      files: [ '/build/*/owapi_*' ]
+    environment:
+      PLUGIN_API_KEY:
+        from_secret: gitea_token
 
 volumes:
   - name: build

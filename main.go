@@ -8,15 +8,15 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
-	"github.com/tystuyfzand/ovrstat/ovrstat"
 	"log"
 	"net/http"
+	"s32x.com/ovrstat/ovrstat"
 	"strings"
 	"time"
 )
 
 const (
-	Version = "2.0.6"
+	Version = "2.0.8"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -91,7 +91,7 @@ func main() {
 	router.GET("/v1/stats/xbl/:tag/complete", injectPlatform("xbl", stats))
 
 	// Version
-	router.GET("/v1/version", VersionHandler)
+	router.GET("/v1/version", versionHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -107,7 +107,7 @@ func main() {
 }
 
 func loadHeroNames() {
-	stats, err := ovrstat.PCStats("us", "cats-11481")
+	stats, err := ovrstat.PCStats("cats-11481")
 
 	if err != nil {
 		return
@@ -149,7 +149,7 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 	cacheKey := generateCacheKey(ps)
 
 	if region := ps.ByName("region"); region != "" {
-		stats, err = ovrstat.PCStats(region, tag)
+		stats, err = ovrstat.PCStats(tag)
 	} else if platform := ps.ByName("platform"); platform != "" {
 		stats, err = ovrstat.ConsoleStats(platform, tag)
 	} else {
@@ -382,7 +382,7 @@ type versionObject struct {
 	Version string `json:"version"`
 }
 
-func VersionHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func versionHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(&versionObject{Version: Version}); err != nil {
