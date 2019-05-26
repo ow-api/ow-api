@@ -37,6 +37,7 @@ steps:
       - name: build
         path: /build
     settings:
+      gitea_server: https://git.meow.tf
       tag_file: /build/version.txt
       title_file: /build/version.txt
       files: [ '/build/*/owapi_*' ]
