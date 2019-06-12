@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	Version = "2.0.10"
+	Version = "2.0.11"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -78,9 +78,12 @@ func main() {
 	router := httprouter.New()
 
 	// PC
-	router.GET("/v1/stats/pc/:region/:tag/heroes/:heroes", heroes)
-	router.GET("/v1/stats/pc/:region/:tag/profile", profile)
-	router.GET("/v1/stats/pc/:region/:tag/complete", stats)
+	router.GET("/v1/stats/pc/:region/:tag/heroes/:heroes", injectPlatform("pc", heroes))
+	router.GET("/v1/stats/pc/:region/:tag/profile", injectPlatform("pc", profile))
+	router.GET("/v1/stats/pc/:region/:tag/complete", injectPlatform("pc", stats))
+	router.GET("/v1/stats/pc/:tag/heroes/:heroes", injectPlatform("pc", heroes))
+	router.GET("/v1/stats/pc/:tag/profile", injectPlatform("pc", profile))
+	router.GET("/v1/stats/pc/:tag/complete", injectPlatform("pc", stats))
 
 	// Console
 	router.GET("/v1/stats/psn/:tag/heroes/:heroes", injectPlatform("psn", heroes))
@@ -92,6 +95,8 @@ func main() {
 
 	// Version
 	router.GET("/v1/version", versionHandler)
+
+	router.GET("/v1/status", statusHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -259,7 +264,7 @@ func stats(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	data, err := statsResponse(w, ps, nil)
 
 	if err != nil {
-		writeError(w, err.Error())
+		writeError(w, err)
 		return
 	}
 
@@ -283,7 +288,7 @@ func profile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	data, err := statsResponse(w, ps, profilePatch)
 
 	if err != nil {
-		writeError(w, err.Error())
+		writeError(w, err)
 		return
 	}
 
@@ -299,7 +304,7 @@ func heroes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	if len(names) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		writeError(w, "Name list must contain at least one hero")
+		writeError(w, errors.New("name list must contain at least one hero"))
 		return
 	}
 
@@ -333,7 +338,7 @@ func heroes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		writeError(w, err.Error())
+		writeError(w, err)
 		return
 	}
 
@@ -341,7 +346,7 @@ func heroes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	data, err := statsResponse(w, ps, patch)
 
 	if err != nil {
-		writeError(w, err.Error())
+		writeError(w, err)
 		return
 	}
 
@@ -386,7 +391,34 @@ func versionHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(&versionObject{Version: Version}); err != nil {
-		writeError(w, err.Error())
+		writeError(w, err)
+	}
+}
+
+type statusObject struct {
+	ResponseCode int    `json:"responseCode"`
+	Error        string `json:"error,omitempty"`
+}
+
+func statusHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	w.Header().Set("Content-Type", "application/json")
+
+	status := &statusObject{}
+
+	res, err := http.DefaultClient.Head("https://playoverwatch.com")
+
+	if err == nil {
+		status.ResponseCode = res.StatusCode
+
+		if res.StatusCode != http.StatusOK {
+			w.WriteHeader(res.StatusCode)
+		}
+	} else {
+		status.Error = err.Error()
+	}
+
+	if err := json.NewEncoder(w).Encode(status); err != nil {
+		writeError(w, err)
 	}
 }
 
@@ -394,10 +426,14 @@ type errorObject struct {
 	Error string `json:"error"`
 }
 
-func writeError(w http.ResponseWriter, err string) {
+func writeError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 
-	if err := json.NewEncoder(w).Encode(&errorObject{Error: err}); err != nil {
+	if err == ovrstat.ErrPlayerNotFound {
+		w.WriteHeader(http.StatusNotFound)
+	}
+
+	if err := json.NewEncoder(w).Encode(&errorObject{Error: err.Error()}); err != nil {
 		return
 	}
 }

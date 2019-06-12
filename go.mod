@@ -3,6 +3,7 @@ module git.meow.tf/ow-api/ow-api
 go 1.12
 
 require (
+	github.com/PuerkitoBio/goquery v1.5.1-0.20190109230704-3dcf72e6c17f
 	github.com/go-redis/redis v6.14.2+incompatible
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/onsi/ginkgo v1.8.0 // indirect
