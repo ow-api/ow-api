@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	Version = "2.0.11"
+	Version = "2.0.12"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -81,9 +81,6 @@ func main() {
 	router.GET("/v1/stats/pc/:region/:tag/heroes/:heroes", injectPlatform("pc", heroes))
 	router.GET("/v1/stats/pc/:region/:tag/profile", injectPlatform("pc", profile))
 	router.GET("/v1/stats/pc/:region/:tag/complete", injectPlatform("pc", stats))
-	router.GET("/v1/stats/pc/:tag/heroes/:heroes", injectPlatform("pc", heroes))
-	router.GET("/v1/stats/pc/:tag/profile", injectPlatform("pc", profile))
-	router.GET("/v1/stats/pc/:tag/complete", injectPlatform("pc", stats))
 
 	// Console
 	router.GET("/v1/stats/psn/:tag/heroes/:heroes", injectPlatform("psn", heroes))
