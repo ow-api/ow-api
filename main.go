@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Version = "2.1.2"
+	Version = "2.1.3"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -39,7 +39,7 @@ type awardsStats struct {
 var (
 	flagBind      = flag.String("bind-address", ":8080", "Address to bind to for http requests")
 	flagCache     = flag.String("cache", "redis://localhost:6379", "Cache uri or 'none' to disable")
-	flagCacheTime = flag.Int("cacheTime", 600, "Cache time in seconds")
+	flagCacheTime = flag.Int("cacheTime", 300, "Cache time in seconds")
 
 	cacheProvider cache.Provider
 
