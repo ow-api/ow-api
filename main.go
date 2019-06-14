@@ -10,13 +10,14 @@ import (
 	"github.com/rs/cors"
 	"log"
 	"net/http"
+	"regexp"
 	"s32x.com/ovrstat/ovrstat"
 	"strings"
 	"time"
 )
 
 const (
-	Version = "2.1.1"
+	Version = "2.1.2"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -137,6 +138,10 @@ func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handl
 	}
 }
 
+var (
+	tagRegexp = regexp.MustCompile("-(\\d+)$")
+)
+
 func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch.Patch) ([]byte, error) {
 	var stats *ovrstat.PlayerStats
 	var err error
@@ -148,6 +153,10 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 	cacheKey := generateCacheKey(ps)
 
 	if region := ps.ByName("region"); region != "" {
+		if !tagRegexp.MatchString(tag) {
+			w.WriteHeader(http.StatusBadRequest)
+			return nil, errors.New("bad tag")
+		}
 		stats, err = ovrstat.PCStats(tag)
 	} else if platform := ps.ByName("platform"); platform != "" {
 		stats, err = ovrstat.ConsoleStats(platform, tag)
