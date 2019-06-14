@@ -4,6 +4,8 @@ go 1.12
 
 require (
 	github.com/PuerkitoBio/goquery v1.5.1-0.20190109230704-3dcf72e6c17f
+	github.com/bluele/gcache v0.0.0-20190518031135-bc40bd653833
+	github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668
 	github.com/go-redis/redis v6.14.2+incompatible
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/onsi/ginkgo v1.8.0 // indirect

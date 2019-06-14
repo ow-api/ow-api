@@ -1,11 +1,13 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
+	"git.meow.tf/ow-api/ow-api/cache"
 	"git.meow.tf/ow-api/ow-api/json-patch"
-	"github.com/go-redis/redis"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
 	"log"
@@ -16,7 +18,7 @@ import (
 )
 
 const (
-	Version = "2.0.12"
+	Version = "2.1.0"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -42,9 +44,13 @@ type awardsStats struct {
 }
 
 var (
-	flagBind = flag.String("bind-address", ":8080", "Address to bind to for http requests")
+	flagBind      = flag.String("bind-address", ":8080", "Address to bind to for http requests")
+	flagCache     = flag.String("cache", "redis://localhost:6379", "Cache uri or 'none' to disable")
+	flagCacheTime = flag.Int("cacheTime", 600, "Cache time in seconds")
 
-	client *redis.Client
+	cacheProvider cache.Provider
+
+	cacheTime time.Duration
 
 	profilePatch *jsonpatch.Patch
 
@@ -54,11 +60,9 @@ var (
 func main() {
 	loadHeroNames()
 
-	client = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
+	cacheProvider = cache.ForURI(*flagCache)
+
+	cacheTime = time.Duration(*flagCacheTime) * time.Second
 
 	var err error
 
@@ -93,6 +97,7 @@ func main() {
 	// Version
 	router.GET("/v1/version", versionHandler)
 
+	router.HEAD("/v1/status", statusHandler)
 	router.GET("/v1/status", statusHandler)
 
 	c := cors.New(cors.Options{
@@ -140,7 +145,7 @@ func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handl
 	}
 }
 
-func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch.Patch) ([]byte, error) {
+func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch.Patch, cacheAddition string) ([]byte, error) {
 	var stats *ovrstat.PlayerStats
 	var err error
 
@@ -149,6 +154,10 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 	tag = strings.Replace(tag, "#", "-", -1)
 
 	cacheKey := generateCacheKey(ps)
+
+	if cacheAddition != "" {
+		cacheKey += "-" + cacheAddition
+	}
 
 	if region := ps.ByName("region"); region != "" {
 		stats, err = ovrstat.PCStats(tag)
@@ -164,7 +173,7 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 
 	// Caching of full response for modification
 
-	res, err := client.Get(cacheKey).Bytes()
+	res, err := cacheProvider.Get(cacheKey)
 
 	if res != nil && err == nil {
 		if patch != nil {
@@ -247,7 +256,9 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 	}
 
 	// Cache response
-	client.Set(cacheKey, b, 10*time.Minute)
+	if cacheTime > 0 {
+		cacheProvider.Set(cacheKey, b, cacheTime)
+	}
 
 	if patch != nil {
 		// Apply filter patch
@@ -258,7 +269,7 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 }
 
 func stats(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	data, err := statsResponse(w, ps, nil)
+	data, err := statsResponse(w, ps, nil, "")
 
 	if err != nil {
 		writeError(w, err)
@@ -271,25 +282,13 @@ func stats(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func profile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	cacheKey := generateCacheKey(ps) + "-profile"
-
-	// Check cache for -profile to prevent jsonpatch calls
-	res, err := client.Get(cacheKey).Bytes()
-
-	if res != nil && err == nil {
-		w.Write(res)
-		return
-	}
-
 	// Cache result for profile specifically
-	data, err := statsResponse(w, ps, profilePatch)
+	data, err := statsResponse(w, ps, profilePatch, "profile")
 
 	if err != nil {
 		writeError(w, err)
 		return
 	}
-
-	client.Set(cacheKey, data, 10*time.Minute)
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -339,8 +338,10 @@ func heroes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
+	cacheKey := md5.New().Sum([]byte(strings.Join(names, ",")))
+
 	// Create a patch to remove all but specified heroes
-	data, err := statsResponse(w, ps, patch)
+	data, err := statsResponse(w, ps, patch, "heroes-"+hex.EncodeToString(cacheKey))
 
 	if err != nil {
 		writeError(w, err)
@@ -414,8 +415,10 @@ func statusHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		status.Error = err.Error()
 	}
 
-	if err := json.NewEncoder(w).Encode(status); err != nil {
-		writeError(w, err)
+	if r.Method != http.MethodHead {
+		if err := json.NewEncoder(w).Encode(status); err != nil {
+			writeError(w, err)
+		}
 	}
 }
 
@@ -441,7 +444,7 @@ func generateCacheKey(ps httprouter.Params) string {
 	tag := ps.ByName("tag")
 
 	if region := ps.ByName("region"); region != "" {
-		cacheKey = "pc-" + region + "-" + tag
+		cacheKey = "pc-" + tag
 	} else if platform := ps.ByName("platform"); platform != "" {
 		cacheKey = platform + "-" + tag
 	}
