@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Version = "2.1.3"
+	Version = "2.2.0"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -232,6 +232,35 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 		})
 	}
 
+	rating := 0
+	var ratingIcon string
+
+	if len(stats.Ratings) > 0 {
+		totalRating := 0
+		iconUrl := ""
+
+		for _, rating := range stats.Ratings {
+			totalRating += rating.Level
+			iconUrl = rating.RankIcon
+		}
+
+		rating = int(totalRating / len(stats.Ratings))
+
+		urlBase := iconUrl[0 : strings.Index(iconUrl, "rank-icons/")+11]
+
+		ratingIcon = urlBase + iconFor(rating)
+	}
+
+	extra = append(extra, patchOperation{
+		Op:    OpAdd,
+		Path:  "/rating",
+		Value: rating,
+	}, patchOperation{
+		Op:    OpAdd,
+		Path:  "/ratingIcon",
+		Value: ratingIcon,
+	})
+
 	b, err := json.Marshal(stats)
 
 	if err != nil {
@@ -263,6 +292,26 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 	}
 
 	return b, err
+}
+
+var icons = map[int]string{
+	4000: "rank-GrandmasterTier.png",
+	3500: "rank-MasterTier.png",
+	3000: "rank-DiamondTier.png",
+	2500: "rank-PlatinumTier.png",
+	2000: "rank-GoldTier.png",
+	1500: "rank-SilverTier.png",
+	0:    "rank-BronzeTier.png",
+}
+
+func iconFor(rating int) string {
+	for r, icon := range icons {
+		if rating >= r {
+			return icon
+		}
+	}
+
+	return ""
 }
 
 func generateCacheKey(ps httprouter.Params) string {
