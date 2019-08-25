@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Version = "2.2.1"
+	Version = "2.2.2"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -302,7 +302,7 @@ func iconFor(rating int) string {
 	} else if rating >= 3000 {
 		return "rank-DiamondTier.png"
 	} else if rating >= 2500 {
-		return "rank-PlatinumTier"
+		return "rank-PlatinumTier.png"
 	} else if rating >= 2000 {
 		return "rank-GoldTier.png"
 	} else if rating >= 1500 {
