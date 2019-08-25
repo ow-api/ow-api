@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Version = "2.2.0"
+	Version = "2.2.1"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -294,24 +294,22 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 	return b, err
 }
 
-var icons = map[int]string{
-	4000: "rank-GrandmasterTier.png",
-	3500: "rank-MasterTier.png",
-	3000: "rank-DiamondTier.png",
-	2500: "rank-PlatinumTier.png",
-	2000: "rank-GoldTier.png",
-	1500: "rank-SilverTier.png",
-	0:    "rank-BronzeTier.png",
-}
-
 func iconFor(rating int) string {
-	for r, icon := range icons {
-		if rating >= r {
-			return icon
-		}
+	if rating >= 4000 {
+		return "rank-GrandmasterTier.png"
+	} else if rating >= 3500 {
+		return "rank-MasterTier.png"
+	} else if rating >= 3000 {
+		return "rank-DiamondTier.png"
+	} else if rating >= 2500 {
+		return "rank-PlatinumTier"
+	} else if rating >= 2000 {
+		return "rank-GoldTier.png"
+	} else if rating >= 1500 {
+		return "rank-SilverTier.png"
 	}
 
-	return ""
+	return "rank-BronzeTier.png"
 }
 
 func generateCacheKey(ps httprouter.Params) string {
