@@ -14,8 +14,11 @@ require (
 	github.com/rs/cors v1.6.0
 	github.com/starboy/httpclient v0.0.0-20180910064439-d6d6e42b6080 // indirect
 	github.com/tystuyfzand/ovrstat v0.0.0-20181127024708-dc4fc9f39eb7
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
-	golang.org/x/tools v0.0.0-20190816200558-6889da9d5479 // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	s32x.com/ovrstat v0.0.0-20190816015343-36b2cbd419d3
+	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392 // indirect
+	golang.org/x/net v0.0.0-20190923162816-aa69164e4478 // indirect
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
+	golang.org/x/sys v0.0.0-20190924154521-2837fb4f24fe // indirect
+	golang.org/x/tools v0.0.0-20190925230517-ea99b82c7b93 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	s32x.com/ovrstat v0.0.0-20190926014443-4c1aecaa11db
 )

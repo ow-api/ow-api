@@ -46,7 +46,7 @@ var (
 		"div.player-level div.u-vertical-center",
 		"div.player-level",
 		"div.player-rank",
-		"div.endorsement-level div.u-center",
+		"div.EndorsementIcon-tooltip div.u-center",
 		"div.EndorsementIcon",
 		"div.masthead p.masthead-detail.h4 span",
 	}
