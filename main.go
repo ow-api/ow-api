@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Version = "2.3.0"
+	Version = "2.3.1"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -49,8 +49,7 @@ var (
 
 	heroNames []string
 
-	platforms        = []string{ovrstat.PlatformPC, ovrstat.PlatformXBL, ovrstat.PlatformPSN, ovrstat.PlatformNS}
-	cloudfrontRegexp = regexp.MustCompile("\"CLOUDFRONT_URL\"\\s*:\\s*\"(.*?)\"")
+	platforms = []string{ovrstat.PlatformPC, ovrstat.PlatformXBL, ovrstat.PlatformPSN, ovrstat.PlatformNS}
 )
 
 func main() {
@@ -99,9 +98,9 @@ func main() {
 
 func registerVersionOne(router *httprouter.Router) {
 	for _, platform := range platforms {
-		router.GET("/v1/stats/"+platform+"/:tag/heroes/:heroes", injectPlatform(platform, heroes))
-		router.GET("/v1/stats/"+platform+"/:tag/profile", injectPlatform(platform, profile))
-		router.GET("/v1/stats/"+platform+"/:tag/complete", injectPlatform(platform, stats))
+		router.GET("/v1/stats/"+platform+"/:region/:tag/heroes/:heroes", injectPlatform(platform, heroes))
+		router.GET("/v1/stats/"+platform+"/:region/:tag/profile", injectPlatform(platform, profile))
+		router.GET("/v1/stats/"+platform+"/:region/:tag/complete", injectPlatform(platform, stats))
 	}
 
 	// Version
