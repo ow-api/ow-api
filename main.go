@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Version = "2.2.3"
+	Version = "2.3.0"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -48,6 +48,9 @@ var (
 	profilePatch *jsonpatch.Patch
 
 	heroNames []string
+
+	platforms        = []string{ovrstat.PlatformPC, ovrstat.PlatformXBL, ovrstat.PlatformPSN, ovrstat.PlatformNS}
+	cloudfrontRegexp = regexp.MustCompile("\"CLOUDFRONT_URL\"\\s*:\\s*\"(.*?)\"")
 )
 
 func main() {
@@ -74,24 +77,12 @@ func main() {
 
 	router := httprouter.New()
 
-	// PC
-	router.GET("/v1/stats/pc/:region/:tag/heroes/:heroes", injectPlatform("pc", heroes))
-	router.GET("/v1/stats/pc/:region/:tag/profile", injectPlatform("pc", profile))
-	router.GET("/v1/stats/pc/:region/:tag/complete", injectPlatform("pc", stats))
+	router.HEAD("/status", statusHandler)
+	router.GET("/status", statusHandler)
 
-	// Console
-	router.GET("/v1/stats/psn/:tag/heroes/:heroes", injectPlatform("psn", heroes))
-	router.GET("/v1/stats/psn/:tag/profile", injectPlatform("psn", profile))
-	router.GET("/v1/stats/psn/:tag/complete", injectPlatform("psn", stats))
-	router.GET("/v1/stats/xbl/:tag/heroes/:heroes", injectPlatform("xbl", heroes))
-	router.GET("/v1/stats/xbl/:tag/profile", injectPlatform("xbl", profile))
-	router.GET("/v1/stats/xbl/:tag/complete", injectPlatform("xbl", stats))
+	registerVersionOne(router)
 
-	// Version
-	router.GET("/v1/version", versionHandler)
-
-	router.HEAD("/v1/status", statusHandler)
-	router.GET("/v1/status", statusHandler)
+	registerVersionTwo(router)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -104,6 +95,31 @@ func main() {
 	})
 
 	log.Fatal(http.ListenAndServe(*flagBind, c.Handler(router)))
+}
+
+func registerVersionOne(router *httprouter.Router) {
+	for _, platform := range platforms {
+		router.GET("/v1/stats/"+platform+"/:tag/heroes/:heroes", injectPlatform(platform, heroes))
+		router.GET("/v1/stats/"+platform+"/:tag/profile", injectPlatform(platform, profile))
+		router.GET("/v1/stats/"+platform+"/:tag/complete", injectPlatform(platform, stats))
+	}
+
+	// Version
+	router.GET("/v1/version", versionHandler)
+
+	router.HEAD("/v1/status", statusHandler)
+	router.GET("/v1/status", statusHandler)
+}
+
+func registerVersionTwo(router *httprouter.Router) {
+	for _, platform := range platforms {
+		router.GET("/v2/stats/"+platform+"/:tag/heroes/:heroes", injectPlatform(platform, heroes))
+		router.GET("/v2/stats/"+platform+"/:tag/profile", injectPlatform(platform, profile))
+		router.GET("/v2/stats/"+platform+"/:tag/complete", injectPlatform(platform, stats))
+	}
+
+	// Version
+	router.GET("/v2/version", versionHandler)
 }
 
 func loadHeroNames() {
@@ -152,16 +168,19 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 
 	cacheKey := generateCacheKey(ps)
 
-	if region := ps.ByName("region"); region != "" {
+	platform := ps.ByName("platform")
+
+	switch platform {
+	case ovrstat.PlatformPC:
 		if !tagRegexp.MatchString(tag) {
 			w.WriteHeader(http.StatusBadRequest)
 			return nil, errors.New("bad tag")
 		}
 		stats, err = ovrstat.PCStats(tag)
-	} else if platform := ps.ByName("platform"); platform != "" {
+	case ovrstat.PlatformPSN, ovrstat.PlatformXBL, ovrstat.PlatformNS:
 		stats, err = ovrstat.ConsoleStats(platform, tag)
-	} else {
-		return nil, errors.New("unknown region/platform")
+	default:
+		return nil, errors.New("unknown platform")
 	}
 
 	if err != nil {
@@ -313,15 +332,5 @@ func iconFor(rating int) string {
 }
 
 func generateCacheKey(ps httprouter.Params) string {
-	var cacheKey string
-
-	tag := ps.ByName("tag")
-
-	if region := ps.ByName("region"); region != "" {
-		cacheKey = "pc-" + tag
-	} else if platform := ps.ByName("platform"); platform != "" {
-		cacheKey = platform + "-" + tag
-	}
-
-	return cacheKey
+	return ps.ByName("platform") + "-" + ps.ByName("tag")
 }

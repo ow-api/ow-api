@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/tystuyfzand/ovrstat/ovrstat"
+	"s32x.com/ovrstat/ovrstat"
 	"testing"
 )
 
 func Test_Stats(t *testing.T) {
-	stats, err := ovrstat.PCStats("us", "cats-11481")
+	stats, err := ovrstat.PCStats("cats-11481")
 
 	if err != nil {
 		t.Fatal(err)
