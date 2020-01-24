@@ -2,6 +2,8 @@ module git.meow.tf/ow-api/ow-api
 
 go 1.12
 
+replace s32x.com/ovrstat => github.com/seilem/ovrstat v0.0.0-20200123200456-7b7e24d39506
+
 require (
 	github.com/PuerkitoBio/goquery v1.5.1-0.20190109230704-3dcf72e6c17f
 	github.com/andybalholm/cascadia v1.1.0 // indirect
