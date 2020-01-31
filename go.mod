@@ -2,8 +2,6 @@ module git.meow.tf/ow-api/ow-api
 
 go 1.12
 
-replace s32x.com/ovrstat => github.com/seilem/ovrstat v0.0.0-20200123200456-7b7e24d39506
-
 require (
 	github.com/PuerkitoBio/goquery v1.5.1-0.20190109230704-3dcf72e6c17f
 	github.com/andybalholm/cascadia v1.1.0 // indirect
@@ -20,5 +18,5 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.2.2 // indirect
-	s32x.com/ovrstat v0.0.0-20191125185405-f48c0d280dc1
+	s32x.com/ovrstat v0.0.0-20200131231416-4cb42edd331d
 )
