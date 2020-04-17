@@ -7,12 +7,13 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 const (
 	baseURL = "https://playoverwatch.com/en-us/career"
 
-	apiURL = "https://playoverwatch.com/en-us/career/platforms/"
+	apiURL = "https://playoverwatch.com/en-us/search/account-by-name/"
 )
 
 type Platform struct {
@@ -86,20 +87,12 @@ func ValidateEndpoint() error {
 		return err
 	}
 
-	code, err := pd.Html()
-
 	if err != nil {
 		return err
 	}
 
-	split := careerInitRegexp.FindStringSubmatch(code)
-
-	if split == nil || len(split) < 2 {
-		return errNoCareerInit
-	}
-
 	// Validate API response
-	if err := validateApi(split[1]); err != nil {
+	if err := validateApi(strings.Replace(url[strings.LastIndex(url, "/")+1:], "-", "%23", -1)); err != nil {
 		return err
 	}
 
@@ -154,13 +147,13 @@ func validateCareerStats(careerStatsSelector *goquery.Selection, parent string) 
 	}
 
 	selectors := []string{
-		"div.row div.js-stats",                                              // Top level
-		"div.row div.js-stats div.column.xs-12",                             // stat boxes
-		"div.row div.js-stats div.column.xs-12 .stat-title",                 // stat boxes
-		"div.row div.js-stats div.column.xs-12 table.DataTable",             // data table
-		"div.row div.js-stats div.column.xs-12 table.DataTable tbody",       // data table tbody
-		"div.row div.js-stats div.column.xs-12 table.DataTable tbody tr",    // data table tbody tr
-		"div.row div.js-stats div.column.xs-12 table.DataTable tbody tr td", // data table tbody tr td
+		"div.row div.js-stats",                                        // Top level
+		"div.row div.js-stats div.column",                             // stat boxes
+		"div.row div.js-stats div.column .stat-title",                 // stat boxes
+		"div.row div.js-stats div.column table.DataTable",             // data table
+		"div.row div.js-stats div.column table.DataTable tbody",       // data table tbody
+		"div.row div.js-stats div.column table.DataTable tbody tr",    // data table tbody tr
+		"div.row div.js-stats div.column table.DataTable tbody tr td", // data table tbody tr td
 	}
 
 	return validateElementsExist(careerStatsSelector, parent, selectors...)
