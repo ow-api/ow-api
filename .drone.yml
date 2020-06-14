@@ -24,24 +24,12 @@ steps:
      - ARCH=amd64 packaging/build-package.sh
      - ARCH=armv7 packaging/build-package.sh
      - ARCH=arm64 packaging/build-package.sh
-     - packaging/package-upload.sh
     volumes:
       - name: build
         path: /build
     environment:
       UPLOAD_URL:
         from_secret: upload_url
-  - name: repo
-    image: tystuyfzand/drone-deb-simple
-    volumes:
-      - name: build
-        path: /build
-    settings:
-      url:
-        from_secret: upload_url
-      key:
-        from_secret: upload_key
-      files: [ '/build/*/owapi_*.deb' ]
   - name: release
     image: tystuyfzand/drone-gitea-release
     volumes:
@@ -55,6 +43,17 @@ steps:
     environment:
       PLUGIN_API_KEY:
         from_secret: gitea_token
+  - name: repo
+    image: tystuyfzand/drone-deb-simple
+    volumes:
+      - name: build
+        path: /build
+    settings:
+      url:
+        from_secret: upload_url
+      key:
+        from_secret: upload_key
+      files: [ '/build/*/owapi_*.deb' ]
 
 volumes:
   - name: build
