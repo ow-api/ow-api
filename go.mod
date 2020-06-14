@@ -10,5 +10,6 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/miekg/dns v1.1.26
 	github.com/rs/cors v1.7.0
+	golang.org/x/net v0.0.0-20190923162816-aa69164e4478
 	s32x.com/ovrstat v0.0.0-20200131231416-4cb42edd331d
 )

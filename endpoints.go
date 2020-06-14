@@ -12,7 +12,7 @@ import (
 )
 
 func stats(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	data, err := statsResponse(w, ps, nil)
+	data, err := statsResponse(w, r, ps, nil)
 
 	if err != nil {
 		writeError(w, err)
@@ -25,7 +25,7 @@ func stats(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func profile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	cacheKey := generateCacheKey(ps) + "-profile"
+	cacheKey := generateCacheKey(r, ps) + "-profile"
 
 	res, err := cacheProvider.Get(cacheKey)
 
@@ -36,7 +36,7 @@ func profile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	// Cache result for profile specifically
-	data, err := statsResponse(w, ps, profilePatch)
+	data, err := statsResponse(w, r, ps, profilePatch)
 
 	if err != nil {
 		writeError(w, err)
@@ -63,7 +63,7 @@ func heroes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	sort.Strings(names)
 
-	cacheKey := generateCacheKey(ps) + "-heroes-" + hex.EncodeToString(md5.New().Sum([]byte(strings.Join(names, ","))))
+	cacheKey := generateCacheKey(r, ps) + "-heroes-" + hex.EncodeToString(md5.New().Sum([]byte(strings.Join(names, ","))))
 
 	res, err := cacheProvider.Get(cacheKey)
 
@@ -108,7 +108,7 @@ func heroes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	// Create a patch to remove all but specified heroes
-	data, err := statsResponse(w, ps, patch)
+	data, err := statsResponse(w, r, ps, patch)
 
 	if err != nil {
 		writeError(w, err)

@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
 	"git.meow.tf/ow-api/ow-api/cache"
 	"git.meow.tf/ow-api/ow-api/json-patch"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
+	"golang.org/x/net/context"
 	"log"
 	"net/http"
 	"regexp"
@@ -17,10 +19,17 @@ import (
 )
 
 const (
-	Version = "2.3.4"
+	Version = "2.3.5"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
+)
+
+type ApiVersion int
+
+const (
+	VersionOne ApiVersion = iota
+	VersionTwo
 )
 
 type gamesStats struct {
@@ -145,11 +154,30 @@ func loadHeroNames() {
 	}
 }
 
+var (
+	versionRegexp = regexp.MustCompile("^/(v\\d+)/")
+)
+
 func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ps = append(ps, httprouter.Param{Key: "platform", Value: platform})
 
-		handler(w, r, ps)
+		ctx := context.Background()
+
+		m := versionRegexp.FindStringSubmatch(r.RequestURI)
+
+		if m != nil {
+			version := VersionOne
+
+			switch m[1] {
+			case "v2":
+				version = VersionTwo
+			}
+
+			ctx = context.WithValue(ctx, "version", version)
+		}
+
+		handler(w, r.WithContext(ctx), ps)
 	}
 }
 
@@ -157,15 +185,21 @@ var (
 	tagRegexp = regexp.MustCompile("-(\\d+)$")
 )
 
-func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch.Patch) ([]byte, error) {
+func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params, patch *jsonpatch.Patch) ([]byte, error) {
 	var stats *ovrstat.PlayerStats
 	var err error
+
+	version := VersionOne
+
+	if v := r.Context().Value("version"); v != nil {
+		version = v.(ApiVersion)
+	}
 
 	tag := ps.ByName("tag")
 
 	tag = strings.Replace(tag, "#", "-", -1)
 
-	cacheKey := generateCacheKey(ps)
+	cacheKey := generateCacheKey(r, ps)
 
 	platform := ps.ByName("platform")
 
@@ -267,6 +301,31 @@ func statsResponse(w http.ResponseWriter, ps httprouter.Params, patch *jsonpatch
 		urlBase := iconUrl[0 : strings.Index(iconUrl, "rank-icons/")+11]
 
 		ratingIcon = urlBase + iconFor(rating)
+
+		if version == VersionTwo {
+			m := make(map[string]ovrstat.Rating)
+
+			ratingsPatches := make([]patchOperation, len(stats.Ratings))
+
+			for i, rating := range stats.Ratings {
+				m[rating.Role] = rating
+				ratingsPatches[i] = patchOperation{
+					Op:   OpRemove,
+					Path: "/ratings/" + rating.Role + "/role",
+				}
+			}
+
+			extra = append(extra, patchOperation{
+				Op:   OpRemove,
+				Path: "/ratings",
+			}, patchOperation{
+				Op:    OpAdd,
+				Path:  "/ratings",
+				Value: m,
+			})
+
+			extra = append(extra, ratingsPatches...)
+		}
 	}
 
 	extra = append(extra, patchOperation{
@@ -330,6 +389,16 @@ func iconFor(rating int) string {
 	return "rank-BronzeTier.png"
 }
 
-func generateCacheKey(ps httprouter.Params) string {
-	return ps.ByName("platform") + "-" + ps.ByName("tag")
+func generateCacheKey(r *http.Request, ps httprouter.Params) string {
+	version := VersionOne
+
+	if v := r.Context().Value("version"); v != nil {
+		version = v.(ApiVersion)
+	}
+
+	return versionToString(version) + "-" + ps.ByName("platform") + "-" + ps.ByName("tag")
+}
+
+func versionToString(version ApiVersion) string {
+	return fmt.Sprintf("v%d", version)
 }
