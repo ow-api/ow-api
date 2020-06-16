@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	Version = "2.4.0"
+	Version = "2.4.1"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -187,6 +187,8 @@ func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handl
 			switch m[1] {
 			case "v2":
 				version = VersionTwo
+			case "v3":
+				version = VersionThree
 			}
 
 			ctx = context.WithValue(ctx, "version", version)
