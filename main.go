@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	Version = "2.3.8"
+	Version = "2.3.9"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -30,6 +30,7 @@ type ApiVersion int
 const (
 	VersionOne ApiVersion = iota
 	VersionTwo
+	VersionThree
 )
 
 type gamesStats struct {
@@ -124,10 +125,14 @@ func registerVersionTwo(router *httprouter.Router) {
 		router.GET("/v2/stats/"+platform+"/:tag/heroes/:heroes", injectPlatform(platform, heroes))
 		router.GET("/v2/stats/"+platform+"/:tag/profile", injectPlatform(platform, profile))
 		router.GET("/v2/stats/"+platform+"/:tag/complete", injectPlatform(platform, stats))
+		router.GET("/v3/stats/"+platform+"/:tag/heroes/:heroes", injectPlatform(platform, heroes))
+		router.GET("/v3/stats/"+platform+"/:tag/profile", injectPlatform(platform, profile))
+		router.GET("/v3/stats/"+platform+"/:tag/complete", injectPlatform(platform, stats))
 	}
 
 	// Version
 	router.GET("/v2/version", versionHandler)
+	router.GET("/v3/version", versionHandler)
 }
 
 func loadHeroNames() {
@@ -296,13 +301,13 @@ func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 			iconUrl = rating.RankIcon
 		}
 
-		rating = int(totalRating / len(stats.Ratings))
+		rating = totalRating / len(stats.Ratings)
 
 		urlBase := iconUrl[0 : strings.Index(iconUrl, "rank-icons/")+11]
 
 		ratingIcon = urlBase + iconFor(rating)
 
-		if version == VersionTwo {
+		if version == VersionThree {
 			m := make(map[string]ovrstat.Rating)
 
 			ratingsPatches := make([]patchOperation, len(stats.Ratings))
