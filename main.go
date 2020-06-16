@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"git.meow.tf/ow-api/ow-api/cache"
 	"git.meow.tf/ow-api/ow-api/json-patch"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
+	"github.com/stoewer/go-strcase"
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
@@ -19,7 +21,7 @@ import (
 )
 
 const (
-	Version = "2.3.9"
+	Version = "2.4.0"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
@@ -136,27 +138,35 @@ func registerVersionTwo(router *httprouter.Router) {
 }
 
 func loadHeroNames() {
-	stats, err := ovrstat.PCStats("cats-11481")
+	res, err := http.Get("https://playoverwatch.com/en-us/heroes/")
 
 	if err != nil {
 		return
 	}
 
-	m := make(map[string]bool)
+	defer res.Body.Close()
 
-	for k := range stats.QuickPlayStats.TopHeroes {
-		m[k] = true
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+
+	if err != nil {
+		return
 	}
 
-	for k := range stats.QuickPlayStats.CareerStats {
-		m[k] = true
-	}
+	links := doc.Find(".hero-portrait-detailed")
 
 	heroNames = make([]string, 0)
 
-	for k := range m {
-		heroNames = append(heroNames, k)
-	}
+	links.Each(func(_ int, s *goquery.Selection) {
+		val, exists := s.Attr("data-hero-id")
+
+		if !exists {
+			return
+		}
+
+		heroNames = append(heroNames, strcase.LowerCamelCase(val))
+	})
+
+	log.Println("Loaded heroes", heroNames)
 }
 
 var (
