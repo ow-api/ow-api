@@ -54,7 +54,17 @@ steps:
       key:
         from_secret: upload_key
       files: [ '/build/*/owapi_*.deb' ]
-
+  - name: docker
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: registry.meow.tf/ow-api/ow-api
+      registry: registry.meow.tf
+      tags:
+        - latest
 volumes:
   - name: build
     temp: {}
