@@ -43,17 +43,6 @@ steps:
     environment:
       PLUGIN_API_KEY:
         from_secret: gitea_token
-  - name: repo
-    image: tystuyfzand/drone-deb-simple
-    volumes:
-      - name: build
-        path: /build
-    settings:
-      url:
-        from_secret: upload_url
-      key:
-        from_secret: upload_key
-      files: [ '/build/*/owapi_*.deb' ]
   - name: docker
     image: plugins/docker
     settings:
@@ -65,6 +54,18 @@ steps:
       registry: registry.meow.tf
       tags:
         - latest
+  - name: repo
+    image: tystuyfzand/drone-deb-simple
+    volumes:
+      - name: build
+        path: /build
+    settings:
+      url:
+        from_secret: upload_url
+      key:
+        from_secret: upload_key
+      distro: stable
+      files: [ '/build/*/owapi_*.deb' ]
 volumes:
   - name: build
     temp: {}
