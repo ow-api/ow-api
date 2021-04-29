@@ -7,6 +7,6 @@ for arch in $(echo $ARCH | sed "s/,/ /g"); do
       -m "Tyler Stuyfzand <admin@meow.tf>" --vendor "Meow.tf" \
       --before-install packaging/scripts/preinst.deb \
       --after-install packaging/scripts/postinst.deb \
-      /build/owapi_${arch}=/usr/bin/owapi \
+      /build/owapi_linux_${arch}=/usr/bin/owapi \
       packaging/owapi.service=/lib/systemd/system/owapi.service
 done
