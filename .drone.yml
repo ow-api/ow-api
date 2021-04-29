@@ -3,27 +3,20 @@ name: default
 
 steps:
   - name: build
-    image: golang:latest
+    image: tystuyfzand/goc
     group: build
     volumes:
       - name: build
         path: /build
     commands:
-     - mkdir -p /build/i386 /build/amd64 /build/armv7 /build/arm64
-     - GOOS=linux GOARCH=386 go build -o /build/i386/owapi_i386
-     - go build -o /build/amd64/owapi_amd64
-     - GOOS=linux GOARCH=arm GOARM=7 go build -o /build/armv7/owapi_armv7
-     - GOOS=linux GOARCH=arm64 go build -o /build/arm64/owapi_arm64
+     - GOOS=linux,windows GOARCH=386,arm,arm64,amd64 goc -o owapi
   - name: package
     image: tystuyfzand/fpm
     commands:
      - export VERSION=`grep "Version" main.go | head -n 1 | awk '{print $3}' | sed -e 's/^"//' -e 's/"$//' | tr -d '\n'`
      - echo "v$VERSION" > /build/version.txt
-     - chmod +x packaging/build-package.sh packaging/package-upload.sh
-     - ARCH=i386 packaging/build-package.sh
-     - ARCH=amd64 packaging/build-package.sh
-     - ARCH=armv7 packaging/build-package.sh
-     - ARCH=arm64 packaging/build-package.sh
+     - chmod +x packaging/build-package.sh
+     - ARCH=386,amd64,armv7,arm64 packaging/build-package.sh
     volumes:
       - name: build
         path: /build
@@ -39,7 +32,7 @@ steps:
       gitea_server: https://git.meow.tf
       tag_file: /build/version.txt
       title_file: /build/version.txt
-      files: [ '/build/*/owapi_*' ]
+      files: [ '/build/owapi_*' ]
     environment:
       PLUGIN_API_KEY:
         from_secret: gitea_token
@@ -54,18 +47,6 @@ steps:
       registry: registry.meow.tf
       tags:
         - latest
-  - name: repo
-    image: tystuyfzand/drone-deb-simple
-    volumes:
-      - name: build
-        path: /build
-    settings:
-      url:
-        from_secret: upload_url
-      key:
-        from_secret: upload_key
-      distro: stable
-      files: [ '/build/*/owapi_*.deb' ]
 volumes:
   - name: build
     temp: {}

@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	Version = "2.4.5"
+	Version = "2.4.6"
 
 	OpAdd    = "add"
 	OpRemove = "remove"
