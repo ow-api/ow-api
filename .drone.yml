@@ -16,7 +16,7 @@ steps:
      - export VERSION=`grep "Version" main.go | head -n 1 | awk '{print $3}' | sed -e 's/^"//' -e 's/"$//' | tr -d '\n'`
      - echo "v$VERSION" > /build/version.txt
      - chmod +x packaging/build-package.sh
-     - ARCH=386,amd64,armv7,arm64 packaging/build-package.sh
+     - ARCH=386,amd64,arm,arm64 packaging/build-package.sh
     volumes:
       - name: build
         path: /build
@@ -50,3 +50,9 @@ steps:
 volumes:
   - name: build
     temp: {}
+
+trigger:
+  branch:
+    - master
+  event:
+    - push
