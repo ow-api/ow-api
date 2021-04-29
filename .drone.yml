@@ -9,7 +9,7 @@ steps:
       - name: build
         path: /build
     commands:
-     - GOOS=linux,windows GOARCH=386,arm,arm64,amd64 goc -o owapi
+     - GOOS=linux,windows GOARCH=386,arm,arm64,amd64 goc -o /build/owapi
   - name: package
     image: tystuyfzand/fpm
     commands:
