@@ -10,12 +10,12 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
+	"github.com/s32x/ovrstat/ovrstat"
 	"github.com/stoewer/go-strcase"
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
 	"regexp"
-	"s32x.com/ovrstat/ovrstat"
 	"strings"
 	"time"
 )

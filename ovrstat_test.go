@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"s32x.com/ovrstat/ovrstat"
+	"github.com/s32x/ovrstat/ovrstat"
 	"testing"
 )
 

@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	jsonpatch "git.meow.tf/ow-api/ow-api/json-patch"
+	"github.com/s32x/ovrstat/ovrstat"
 	"net/http"
-	"s32x.com/ovrstat/ovrstat"
 )
 
 func valueOrDefault(m map[string]interface{}, key string, d int64) int64 {

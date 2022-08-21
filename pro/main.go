@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/miekg/dns"
+	"github.com/s32x/ovrstat/ovrstat"
 	"log"
 	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
-	"s32x.com/ovrstat/ovrstat"
 	"strings"
 	"time"
 )
