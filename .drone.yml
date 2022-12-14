@@ -23,19 +23,19 @@ steps:
     environment:
       UPLOAD_URL:
         from_secret: upload_url
-  - name: release
-    image: tystuyfzand/drone-gitea-release
-    volumes:
-      - name: build
-        path: /build
-    settings:
-      gitea_server: https://git.meow.tf
-      tag_file: /build/version.txt
-      title_file: /build/version.txt
-      files: [ '/build/owapi_*' ]
-    environment:
-      PLUGIN_API_KEY:
-        from_secret: gitea_token
+#  - name: release
+#    image: tystuyfzand/drone-gitea-release
+#    volumes:
+#      - name: build
+#        path: /build
+#    settings:
+#      gitea_server: https://git.meow.tf
+#      tag_file: /build/version.txt
+#      title_file: /build/version.txt
+#      files: [ '/build/owapi_*' ]
+#    environment:
+#      PLUGIN_API_KEY:
+#        from_secret: gitea_token
   - name: docker
     image: plugins/docker
     settings:
