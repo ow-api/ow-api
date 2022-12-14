@@ -151,7 +151,7 @@ func loadHeroNames() {
 		return
 	}
 
-	links := doc.Find(".hero-portrait-detailed")
+	links := doc.Find(".herocard")
 
 	heroNames = make([]string, 0)
 
