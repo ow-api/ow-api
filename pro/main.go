@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/miekg/dns"
-	"github.com/s32x/ovrstat/ovrstat"
+	"github.com/ow-api/ovrstat/ovrstat"
 	"log"
 	"math/rand"
 	"net"
@@ -99,13 +99,13 @@ func main() {
 		Transport: transport,
 	}
 
-	stats, err := ovrstat.PCStats("cats-11481")
+	stats, err := ovrstat.Stats(ovrstat.PlatformPC, "cats-11481")
 
 	if err != nil {
 		log.Fatalln("Error retrieving:", err)
 	}
 
-	log.Println(stats.Name+" is level", stats.Level)
+	log.Println(stats.Name+" is level", stats.Endorsement)
 }
 
 func lookupCloudfrontURL() (string, error) {

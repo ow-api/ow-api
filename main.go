@@ -2,15 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"git.meow.tf/ow-api/ow-api/cache"
 	"git.meow.tf/ow-api/ow-api/json-patch"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/julienschmidt/httprouter"
+	"github.com/ow-api/ovrstat/ovrstat"
 	"github.com/rs/cors"
-	"github.com/s32x/ovrstat/ovrstat"
 	"github.com/stoewer/go-strcase"
 	"golang.org/x/net/context"
 	"log"
@@ -61,7 +60,7 @@ var (
 
 	heroNames []string
 
-	platforms = []string{ovrstat.PlatformPC, ovrstat.PlatformXBL, ovrstat.PlatformPSN, ovrstat.PlatformNS}
+	platforms = []string{ovrstat.PlatformPC, ovrstat.PlatformConsole}
 )
 
 func main() {
@@ -175,6 +174,10 @@ var (
 
 func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		if platform == "psn" || platform == "xbl" || platform == "nintendo-switch" {
+			platform = ovrstat.PlatformConsole
+		}
+
 		ps = append(ps, httprouter.Param{Key: "platform", Value: platform})
 
 		ctx := context.Background()
@@ -220,18 +223,7 @@ func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 
 	platform := ps.ByName("platform")
 
-	switch platform {
-	case ovrstat.PlatformPC:
-		if !tagRegexp.MatchString(tag) {
-			w.WriteHeader(http.StatusBadRequest)
-			return nil, errors.New("bad tag")
-		}
-		stats, err = ovrstat.PCStats(tag)
-	case ovrstat.PlatformPSN, ovrstat.PlatformXBL, ovrstat.PlatformNS:
-		stats, err = ovrstat.ConsoleStats(platform, tag)
-	default:
-		return nil, errors.New("unknown platform")
-	}
+	stats, err = ovrstat.Stats(platform, tag)
 
 	if err != nil {
 		return nil, err
@@ -305,20 +297,6 @@ func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 	var ratingIcon string
 
 	if len(stats.Ratings) > 0 {
-		totalRating := 0
-		iconUrl := ""
-
-		for _, rating := range stats.Ratings {
-			totalRating += rating.Level
-			iconUrl = rating.RankIcon
-		}
-
-		rating = totalRating / len(stats.Ratings)
-
-		urlBase := iconUrl[0 : strings.Index(iconUrl, "rank-icons/")+11]
-
-		ratingIcon = urlBase + iconFor(rating)
-
 		if version == VersionThree {
 			m := make(map[string]ovrstat.Rating)
 
@@ -386,24 +364,6 @@ func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 	}
 
 	return b, err
-}
-
-func iconFor(rating int) string {
-	if rating >= 4000 {
-		return "rank-GrandmasterTier.png"
-	} else if rating >= 3500 {
-		return "rank-MasterTier.png"
-	} else if rating >= 3000 {
-		return "rank-DiamondTier.png"
-	} else if rating >= 2500 {
-		return "rank-PlatinumTier.png"
-	} else if rating >= 2000 {
-		return "rank-GoldTier.png"
-	} else if rating >= 1500 {
-		return "rank-SilverTier.png"
-	}
-
-	return "rank-BronzeTier.png"
 }
 
 func generateCacheKey(r *http.Request, ps httprouter.Params) string {

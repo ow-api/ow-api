@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	jsonpatch "git.meow.tf/ow-api/ow-api/json-patch"
-	"github.com/s32x/ovrstat/ovrstat"
+	"github.com/ow-api/ovrstat/ovrstat"
 	"net/http"
 )
 
