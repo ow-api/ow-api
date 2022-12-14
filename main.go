@@ -137,7 +137,7 @@ func registerVersionTwo(router *httprouter.Router) {
 }
 
 func loadHeroNames() {
-	res, err := http.Get("https://playoverwatch.com/en-us/heroes/")
+	res, err := http.Get("https://overwatch.blizzard.com/en-us/heroes/")
 
 	if err != nil {
 		return
@@ -151,7 +151,7 @@ func loadHeroNames() {
 		return
 	}
 
-	links := doc.Find(".herocard")
+	links := doc.Find(".heroCard")
 
 	heroNames = make([]string, 0)
 
@@ -223,7 +223,7 @@ func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 
 	platform := ps.ByName("platform")
 
-	stats, err = ovrstat.Stats(platform, tag)
+	stats, err = ovrstat.Stats(platform, strings.Replace(tag, "-", "#", -1))
 
 	if err != nil {
 		return nil, err
