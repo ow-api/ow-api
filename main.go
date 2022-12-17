@@ -201,10 +201,6 @@ func injectPlatform(platform string, handler httprouter.Handle) httprouter.Handl
 	}
 }
 
-var (
-	tagRegexp = regexp.MustCompile("-(\\d+)$")
-)
-
 func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params, patch *jsonpatch.Patch) ([]byte, error) {
 	var stats *ovrstat.PlayerStats
 	var err error
@@ -249,22 +245,10 @@ func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 		games.Played = valueOrDefault(hs.Game, "gamesPlayed", 0)
 		games.Won = valueOrDefault(hs.Game, "gamesWon", 0)
 
-		awards := &awardsStats{}
-
-		awards.Cards = valueOrDefault(hs.MatchAwards, "cards", 0)
-		awards.Medals = valueOrDefault(hs.MatchAwards, "medals", 0)
-		awards.Bronze = valueOrDefault(hs.MatchAwards, "medalsBronze", 0)
-		awards.Silver = valueOrDefault(hs.MatchAwards, "medalsSilver", 0)
-		awards.Gold = valueOrDefault(hs.MatchAwards, "medalsGold", 0)
-
 		extra = append(extra, patchOperation{
 			Op:    OpAdd,
 			Path:  "/quickPlayStats/games",
 			Value: games,
-		}, patchOperation{
-			Op:    OpAdd,
-			Path:  "/quickPlayStats/awards",
-			Value: awards,
 		})
 	}
 
@@ -274,27 +258,12 @@ func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 		games.Played = valueOrDefault(hs.Game, "gamesPlayed", 0)
 		games.Won = valueOrDefault(hs.Game, "gamesWon", 0)
 
-		awards := &awardsStats{}
-
-		awards.Cards = valueOrDefault(hs.MatchAwards, "cards", 0)
-		awards.Medals = valueOrDefault(hs.MatchAwards, "medals", 0)
-		awards.Bronze = valueOrDefault(hs.MatchAwards, "medalsBronze", 0)
-		awards.Silver = valueOrDefault(hs.MatchAwards, "medalsSilver", 0)
-		awards.Gold = valueOrDefault(hs.MatchAwards, "medalsGold", 0)
-
 		extra = append(extra, patchOperation{
 			Op:    OpAdd,
 			Path:  "/competitiveStats/games",
 			Value: games,
-		}, patchOperation{
-			Op:    OpAdd,
-			Path:  "/competitiveStats/awards",
-			Value: awards,
 		})
 	}
-
-	rating := 0
-	var ratingIcon string
 
 	if len(stats.Ratings) > 0 {
 		if version == VersionThree {
@@ -322,16 +291,6 @@ func statsResponse(w http.ResponseWriter, r *http.Request, ps httprouter.Params,
 			extra = append(extra, ratingsPatches...)
 		}
 	}
-
-	extra = append(extra, patchOperation{
-		Op:    OpAdd,
-		Path:  "/rating",
-		Value: rating,
-	}, patchOperation{
-		Op:    OpAdd,
-		Path:  "/ratingIcon",
-		Value: ratingIcon,
-	})
 
 	b, err := json.Marshal(stats)
 
