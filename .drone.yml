@@ -43,8 +43,8 @@ steps:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      repo: registry.meow.tf/ow-api/ow-api
-      registry: registry.meow.tf
+      repo: ghcr.io/ow-api/ow-api
+      registry: ghcr.io
       tags:
         - latest
 volumes:
