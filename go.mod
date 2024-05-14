@@ -8,7 +8,7 @@ require (
 	github.com/bradfitz/gomemcache v0.0.0-20230905024940-24af94b03874
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/miekg/dns v1.1.57
+	github.com/miekg/dns v1.1.59
 	github.com/ow-api/ovrstat v0.0.0-20240514232233-12eb88f17eba
 	github.com/rs/cors v1.11.0
 	github.com/stoewer/go-strcase v1.3.0
@@ -22,7 +22,7 @@ require (
 	github.com/onsi/gomega v1.20.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
-	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/tools v0.17.0 // indirect
+	golang.org/x/tools v0.19.0 // indirect
 )
